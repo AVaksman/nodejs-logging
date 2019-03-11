@@ -164,6 +164,14 @@ describe('Logging', () => {
         assert(sinks.length > 0);
       });
 
+      it('should list sinks callback', done => {
+        logging.getSinks((err, sinks) => {
+          assert.ifError(err);
+          assert(sinks!.length > 0);
+          done();
+        })
+      });
+
       it('should list sinks as a stream', done => {
         const logstream = logging.getSinksStream({pageSize: 1})
                               .on('error', done)

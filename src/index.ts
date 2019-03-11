@@ -48,7 +48,7 @@ import {google} from '../proto/logging';
 import {google as google_config} from '../proto/logging_config';
 import {CallOptions} from 'google-gax/build/src/gax';
 import {Bucket} from '@google-cloud/storage';
-import {Dataset} from '@google-cloud/bigquery';
+import {Dataset, BigQuery} from '@google-cloud/bigquery';
 import {Topic} from '@google-cloud/pubsub';
 
 export interface LoggingOptions extends gax.GoogleAuthOptions {
@@ -834,8 +834,8 @@ class Logging {
    * @private
    */
   async setAclForBucket_(config: CreateSinkRequest) {
-    const bucket = config.destination;
-    await bucket.acl.owners.addGroup('cloud-logs@google.com');
+    const bucket = config.destination as Bucket;
+    await await (bucket.acl.owners as any).addGroup('cloud-logs@google.com');
     config.destination = 'storage.googleapis.com/' + bucket.name;
   }
 
@@ -849,7 +849,7 @@ class Logging {
    * @private
    */
   async setAclForDataset_(config: CreateSinkRequest) {
-    const dataset = config.destination;
+    const dataset = config.destination as Dataset;
     const [metadata, ] = await dataset.getMetadata();
     // tslint:disable-next-line no-any
     const access = ([] as any[]).slice.call(arrify(metadata.access));
@@ -861,7 +861,7 @@ class Logging {
       access,
     });
     const baseUrl = 'bigquery.googleapis.com';
-    const pId = dataset.parent.projectId;
+    const pId = (dataset.parent as BigQuery).projectId;
     const dId = dataset.id;
     config.destination = `${baseUrl}/projects/${pId}/datasets/${dId}`;
   }
@@ -876,7 +876,7 @@ class Logging {
    * @private
    */
   async setAclForTopic_(config: CreateSinkRequest) {
-    const topic = config.destination;
+    const topic = config.destination as Topic;
     const [policy, ] = await topic.iam.getPolicy();
     policy.bindings = arrify(policy.bindings);
     policy.bindings.push({
